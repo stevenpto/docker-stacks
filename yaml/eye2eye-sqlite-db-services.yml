@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  api:
+    image: eye2eye-sqlite-db-service:latest
+    container_name: eye2eye-sqlite-db
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      # Application Configuration
+      FLASK_ENV: production
+      APP_PORT: 8001
+
+      # Database Configuration
+      DB_PATH: /data/eye2eye_optometry.db
+
+      # Directory Paths (Container Paths)
+      PHOTO_BUCKET_DIR: /data/photos-bucket
+      SCAN_DIR: /data/scan
+      UPLOAD_FOLDER: /data/uploads/retinal_scans
+
+      # Security Configuration
+      # IMPORTANT: Replace with your secure JWT secret key
+      JWT_SECRET_KEY: nR1rlXSAvevMv8yXiJ0WGxnwjN7JcrvUKv696q_m5Fs
+    volumes:
+      # SQLite database file - persistent storage
+      - C:/data:/data
+
+      # Photo bucket directory for frame inventory images
+      - C:/data/photos-bucket:/data/photos-bucket
+
+      # Scan directory for patient PDF scans
+      - C:/scan:/data/scan
+
+      # Upload directory for retinal scan images
+      - C:/data/uploads:/data/uploads
+    networks:
+      - eye2eye-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  eye2eye-network:
+    external : true

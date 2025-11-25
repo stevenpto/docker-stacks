@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+   frontend:
+      image: eye2eye-frontend:latest
+      container_name: eye2eye-frontend
+      restart: unless-stopped
+      ports:
+        - "5173:3000"
+      environment:
+        NODE_ENV: production
+        PROXY_PORT: 3000
+        STATIC_PATH: ./dist
+        SQLITE_SERVICE_URL: http://eye2eye-sqlite-db:8001
+        BACKEND_URL: http://eye2eye-sqlite-db:8001
+        AI_SERVICE_URL: http://192.168.0.124:8700
+        AI_AGENT_URL: http://192.168.0.124:8501
+      healthcheck:
+        test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))\""]
+        interval: 30s
+        timeout: 10s
+        start_period: 40s
+        retries: 3
+      networks:
+        - eye2eye-network
+
+networks:
+    eye2eye-network:
+      external: true
